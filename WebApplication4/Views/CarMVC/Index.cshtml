@@ -1,0 +1,172 @@
+﻿@using WebApplication4.Entities
+@using WebApplication4.Enums
+@using WebApplication4.Models
+@* @{
+	PaginationViewModel pager = new PaginationViewModel();
+	int pageNo = 0;
+
+	if(ViewBag.PaginationViewModel != null)
+	{
+		pager = ViewBag.PaginationViewModel;
+		pageNo = pager.CurrentPage;
+	}
+} *@
+@model (List<Car>,List<string>,List<string>, WebApplication4.Models.PaginationViewModel )
+<form asp-action="Index" asp-controller="CarMVC" method="get">
+	<div class="row mb-3">
+		<label class="col-sm-4 form-label">Manufacturer :</label>
+		<div class="col-sm-8">
+			<select name="filterbymanufacturer" name="filterbymanufacturer" class="form-select" multiple>
+				@foreach(var manufacturer in Enum.GetValues(typeof(Manufacturers)))
+				{
+					var filter = Model.Item2;
+					@if(filter is not null && filter.Contains(manufacturer.ToString()))
+					{
+						<option selected>@manufacturer</option>
+					}
+					else
+					{
+						<option>@manufacturer</option>
+					}
+				}
+			</select>
+		</div>
+	</div>
+	<div class="row mb-3">
+		<label class="col-sm-4 form-label">Colors :</label>
+		<div class="col-sm-8">
+			<select class="form-select" name="filterbycolor" id="filterbycolor" multiple>
+				@foreach(var color in Enum.GetValues(typeof(Colors)))
+				{
+					var filter2 = Model.Item3; 
+					@if(filter2 is not null && filter2.Contains(color.ToString()))
+					{
+						<option selected>@color</option>
+					}
+					else
+					{
+						<option>@color</option>
+					}
+				}
+			</select>
+		</div>
+	</div>
+	
+	<label class="form-label" for="MinPrice">Minimum Price:</label>
+	<input name="minPrice" type="number" step="1000" min="0" />
+
+	<label class="form-label ms-3" for="MaxPrice">Maximum Price:</label>
+	<input name="maxPrice" type="number" step="1000" min="0" />
+
+	
+
+	<div class="d-flex justify-content-end mb-3">
+		<button type="submit" class="btn btn-primary">Filter</button>
+		<a asp-controller="CarMVC" asp-action="Index" class="btn btn-secondary ms-3">
+			Back to List
+		</a>
+	</div>
+</form>
+
+
+
+<div class="card shadow-lg p-3 mb-0 bg-body-tertiary rounded mt-2 mb-3">
+	<div class="card-header bg-secondary bg-gradient ml-0 py-2 shadow-lg p-3 mb-2 bg-body-tertiary rounded">
+		<div class="row">
+			<div class="col-12 text-center">
+				<h2 class="text-black py-2">List of Cars</h2>
+			</div>
+		</div>
+	</div>
+	<table class="table table-bordered	table-striped shadow-lg p-3 mb-5 bg-body-tertiary rounded">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Manufacturer</th>
+				<th>Model</th>
+				<th>Color</th>
+				<th>Price</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var car in Model.Item1)
+			{
+				<tr>
+					<td>@car.Id</td>
+					<td>@car.Manufacturer</td>
+					<td>@car.Model</td>
+					<td>@car.Color</td>
+					<td>@car.Price</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+	<nav aria-label="Page navigation">
+		@if(Model.Item4.TotalPages > 1)
+		{
+			<ul class="pagination justify-content-center">
+				@if (Model.Item4.CurrentPage > 1)
+				{
+					<li class="page-item">
+						<a class="page-link" asp-action="Index" asp-controller="CarMVC" asp-route-page="@(Model.Item4.CurrentPage - 1)" asp-route-pageSize="10">« Previous</a>
+					</li>
+				}else
+				{
+					<li class="page-item">
+						<a class="page-link disabled" >« Previous</a>
+					</li>
+				}
+				@for (int i = 1; i <= Model.Item4.TotalPages; i++)
+				{
+					<li class="page-item @(i == Model.Item4.CurrentPage ? "active" : "")">
+						<a class="page-link" asp-action="Index" asp-controller="CarMVC" asp-route-page="@i" asp-route-pageSize="10">@i</a>
+					</li>
+				}
+				@if (Model.Item4.CurrentPage < Model.Item4.TotalPages)
+				{
+					<li class="page-item">
+						<a class="page-link" asp-action="Index" asp-controller="CarMVC" asp-route-page="@(Model.Item4.CurrentPage + 1)" asp-route-pageSize="10">Next »</a>
+					</li>
+				}
+				else
+				{
+					<li class="page-item">
+						<a class="page-link disabled">Next »</a>
+					</li>
+				}
+			</ul>
+		}
+	</nav>
+	@* <div class="container">
+		@if(pager.TotalPages > 0)
+		{
+			<ul class="pagination justify-content-center">
+				@if(pager.CurrentPage > 1)
+				{
+					<li class="page-item">
+						<button class="page-link" asp-action="Index" asp-controller="CarMVC" asp-route-page="1">First</button>
+					</li>
+					<li>
+						<button class="page-link" asp-action="Index" asp-controller="CarMVC" asp-route-page="@(pager.CurrentPage-1)">Pervious</button>
+					</li>
+				}
+				@for(var pge = pager.StartPage; pge <= pager.EndPage; pge++)
+				{
+					<li class="page-item @(pge == pager.CurrentPage ? "active":"")">
+						<button class="page-link" asp-controller="CarMVC" asp-action="Index" asp-route-page="@pge">@pge</button>
+					</li>
+				}
+
+				@if(pager.CurrentPage < pager.TotalPages)
+				{
+					<li class="page-item">
+						<button class="page-link" asp-controller="CarMVC" asp-action="Index" asp-route-page="@(pager.CurrentPage + 1)">Next</button>
+					</li>
+					<li>
+						<button class="page-link" asp-controller="CarMVC" asp-action="Index" asp-route-page="@(pager.TotalPages)">Last</button>
+					</li>
+				}
+			</ul>
+		}
+	</div> *@
+</div>
