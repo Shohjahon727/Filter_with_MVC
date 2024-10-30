@@ -1,20 +1,20 @@
-﻿namespace WebApplication4.Models
+﻿namespace WebApplication4.Models.ViewModels
 {
-	public class PaginationViewModel
-	{
-		public int TotalItems { get; set; }
-		public int CurrentPage { get; set; }
-		public int PageSize { get; set; }
-		public int TotalPages { get; set; }
-		public int StartPage {  get; set; }
-		public int EndPage { get; set; }
+    public class PaginationViewModel
+    {
+        public int TotalItems { get; set; }
+        public int CurrentPage { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
+        //public int StartPage {  get; set; }
+        //public int EndPage { get; set; }
         public PaginationViewModel()
         {
-            
+
         }
-        public PaginationViewModel(int totalItems , int page = 1 , int pageSize =10)
+        public PaginationViewModel(int totalItems, int page = 1, int pageSize = 10)
         {
-            int totalPages = (int)Math.Ceiling((decimal)totalItems / (decimal)pageSize);
+            int totalPages = (int)Math.Ceiling(totalItems / (decimal)pageSize);
             int currentPage = page;
             //int startPage = currentPage - 5;
             //int endPage = currentPage + 4;
