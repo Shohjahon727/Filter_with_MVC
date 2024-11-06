@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using WebApplication4.Data;
-using WebApplication4.Entities;
-using WebApplication4.Enums;
 using WebApplication4.Models;
 using WebApplication4.Models.RequestModels;
-using WebApplication4.Models.ViewModels;
 
 namespace WebApplication4.Controllers;
 
@@ -23,4 +19,3 @@ public class CarMVCController : Controller
 		return View(carListModel.CarListViewModel);
 	}
 }
-

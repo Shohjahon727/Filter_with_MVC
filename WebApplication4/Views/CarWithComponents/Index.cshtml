@@ -1,0 +1,137 @@
+﻿@using WebApplication4.Entities
+@using WebApplication4.Enums
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+@Html.Partial("Components/FilterComponent")
+@Html.Partial("Components/CarTableComponent")
+@Html.Partial("Components/PaginationComponent")
+
+
+<div id="app">
+	
+	 <filter-component 
+            :colors="filters.colors" 
+            :manufacturers="filters.manufacturers"
+		    @@apply-filters="filterCars">
+     </filter-component>
+
+	<cartable-component :cars="cars" 
+            :manufacturers="filters.manufacturers" 
+            :colors="filters.colors">
+    </cartable-component>
+
+	<pagination-component :current-page="pager.currentPage" 
+            :total-pages="pager.totalPages" 
+            @@page-changed="changePage">
+    </pagination-component>
+
+</div>
+
+
+
+<script>
+	new Vue({
+		el: '#app',
+		data: {
+			filters: {
+				selectedManufacturers: [],
+				selectedColors: [],
+				minPrice: null,
+				maxPrice: null,
+				colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
+				manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
+			},
+			pager: {
+				currantPage: 1,
+				pageSize: 10,
+				totalPages: 0,
+				totalItems: 0
+			},
+			cars: '',
+		},
+		methods: {
+			applyFilters: async function () {
+				try {
+					let selected = document.getElementById("filterbycolor").selectedOptions;
+					let newArray = [];
+					for (let i = 0; i < selected.length; i++) {
+						newArray.push(selected[i].value)
+					}
+
+					let selectedmanufacturer = document.getElementById("filterbymanufacturer").selectedOptions;
+					let newArrayManufacturer = [];
+					for (let i = 0; i < selectedmanufacturer.length; i++) {
+						newArrayManufacturer.push(selectedmanufacturer[i].value)
+					}
+
+					let queryParams = new URLSearchParams();
+					if (newArray.length > 0) {
+						queryParams.append("filterbycolor", newArray.join(','));
+					}
+					if (newArrayManufacturer.length > 0) {
+						queryParams.append("filterbymanufacturer", newArrayManufacturer.join(','));
+					}
+					if (this.filters.minPrice) {
+						queryParams.append("minPrice", this.filters.minPrice);
+					}
+					if (this.filters.maxPrice) {
+						queryParams.append("maxPrice", this.filters.maxPrice);
+					}
+					if (this.pager.currentPage) {
+						queryParams.append("page", this.pager.currentPage);
+					}
+					if (this.pager.pageSize) {
+						queryParams.append("pageSize", this.pager.pageSize);
+					}
+
+					window.history.pushState(null, '', '/CarWithComponents/?' + queryParams.toString());
+					const response = await axios.get('/CarWithComponents/Filter?' + queryParams.toString());
+					console.log(response.data.data);
+					this.cars = response.data.data;
+					this.filters.selectedColors = newArray;
+					this.filters.selectedManufacturers = newArrayManufacturer;
+					this.pager.totalItems = response.data.totalItems;
+					this.pager.totalPages = Math.ceil(this.pager.totalItems / this.pager.pageSize);
+				}
+				catch (error) {
+					console.error("Error Fetching filtered cars :", error);
+				}
+			},
+			filterCars: function () {
+				this.pager.currentPage = 1;
+				this.applyFilters();
+			},
+			changePage: function (page) {
+				if (page > 0 && page <= this.pager.totalPages) {
+					this.pager.currentPage = page;
+					this.applyFilters();
+				}
+			}
+		},
+		beforeMount() {
+			const urlParams = new URLSearchParams(window.location.search);
+			const filtercolor = urlParams.get('filterbycolor');
+			const filtermanufacturer = urlParams.get('filterbymanufacturer');
+			const minprice = urlParams.get('minPrice');
+			const maxprice = urlParams.get('maxPrice');
+			const page = urlParams.get('page');
+			const pagesize = urlParams.get('pageSize');
+
+			this.filters.selectedColors = filtercolor ? filtercolor.split(',') : [];
+			this.filters.selectedManufacturers = filtermanufacturer ? filtermanufacturer.split(',') : [];
+			this.filters.minPrice = minprice ? parseFloat(minprice) : null;
+			this.filters.maxPrice = maxprice ? parseFloat(maxprice) : null;
+			this.pager.currentPage = page ? parseInt(page) : 1;
+			this.pager.pageSize = pagesize ? parseInt(pagesize) : 10;
+
+		},
+		mounted() {
+			this.applyFilters();
+		}
+	});
+</script>
+

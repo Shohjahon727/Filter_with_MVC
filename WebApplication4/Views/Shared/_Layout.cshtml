@@ -30,6 +30,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="CarMVC" asp-action="Index">CarMVC</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="CarWithComponents" asp-action="Index">CarWithComponents</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -50,6 +53,8 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
     <script>
         $(document).ready(function () {
             $('.form-select').select2();

@@ -18,10 +18,10 @@ namespace WebApplication4.Models
 			_context = context;
 			RequestModel = requestModel;
 			CarListViewModel = new CarListViewModel();
-			GetCars();
+			FilterCars();
 		}
 
-		private void GetCars()
+		private void FilterCars()
 		{
 			var query = _context.Cars.AsQueryable();
 

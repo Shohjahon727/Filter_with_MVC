@@ -52,8 +52,6 @@
 	<label class="form-label ms-3" for="MaxPrice">Maximum Price:</label>
 	<input name="maxPrice" id="maxPrice" type="number" value="@Model.Filter.MaxPrice" step="1000" min="0" />
 
-	
-
 	<div class="d-flex justify-content-end mb-3">
 		<button type="submit" class="btn btn-primary">Filter</button>
 		<a asp-controller="CarMVC" asp-action="Index" class="btn btn-secondary ms-3">
@@ -72,6 +70,7 @@
 			</div>
 		</div>
 	</div>
+	
 	<table class="table table-bordered	table-striped shadow-lg p-3 mb-5 bg-body-tertiary rounded">
 		<thead>
 			<tr>

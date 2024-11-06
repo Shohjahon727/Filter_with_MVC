@@ -1,0 +1,70 @@
+﻿@using WebApplication4.Enums
+
+<script type="text/x-template" id="filter-component-template">
+	<div id="filter-component">
+			<div class="row mb-3">
+				<label class="col-sm-4 form-label">Manufacturer :</label>
+				<div class="col-sm-8">
+					<select class="form-select select2" id="filterbymanufacturer" name="filterbymanufacturer" v-model="selectedManufacturers" multiple>
+						<option v-for="manufacturer in manufacturers" :key="manufacturer" :value="manufacturer">
+							{{manufacturer}}
+						</option>
+					</select>
+				</div>
+		    </div>
+			<div class="row mb-3">
+				<label class="col-sm-4 form-label">Colors :</label>
+				<div class="col-sm-8">
+					<select class="form-select select2" id="filterbycolor" name="filterbycolor" v-model="selectedColors" multiple>
+						<option v-for="color in colors" :key="color" :value="color">
+							{{color}}
+						</option>
+					</select>
+				</div>
+			</div>
+
+			<label for="minPrice">Minimum Price :</label>
+			<input type="number" v-model="minPrice" id="minPrice" name="minPrice" step="1000" min="0" />
+
+			<label for="maxPrice">Maximum Price :</label>
+			<input type="number" v-model="maxPrice" id="maxPrice" name="maxPrice" step="1000" min="0" />
+
+			<div class="d-flex justify-content-end mb-3">
+				<button @@click="filterCars" class="btn btn-primary">Filter</button>
+				<a href="/CarWithComponents" class="btn btn-secondary ms-3">Back to List</a>
+			</div>
+	</div>
+</script>
+
+<script>
+	Vue.component('filter-component', {
+		template: '#filter-component-template',
+		props: ['colors', 'manufacturers'],
+		data() {
+			return {
+				selectedColors: [],
+				selectedManufacturers: [],
+				minPrice: null,
+				maxPrice: null,
+				currentPage: 1
+			};
+		},
+		methods: {
+			filterCars: function() { // bu yerda functionni berib ketish kerak !
+				this.currentPage = 1;
+				this.$emit('apply-filters', {
+					selectedColors: this.selectedColors,
+					selectedManufacturers: this.selectedManufacturers,
+					minPrice: this.minPrice,
+					maxPrice: this.maxPrice,
+					currentPage: this.currentPage
+				});
+				
+			}
+		}
+	});
+</script>
+
+
+
+
