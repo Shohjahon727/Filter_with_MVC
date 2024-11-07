@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication4.Data;
+using WebApplication4.Entities;
 using WebApplication4.Enums;
 
 namespace WebApplication4.Controllers
@@ -16,10 +17,21 @@ namespace WebApplication4.Controllers
 			
 			return View();
 		}
-		
 		public IActionResult Create()
 		{
 			return View();
+		}
+
+		[HttpPost]
+		public IActionResult Create(Car car)
+		{
+			if(ModelState.IsValid)
+			{
+				_context.Add(car);
+				_context.SaveChanges();
+				return RedirectToAction("Index");
+			}
+			return View(car);
 		}
 		
 		[HttpGet]
