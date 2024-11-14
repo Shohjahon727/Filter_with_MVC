@@ -5,8 +5,8 @@
 			<div class="row mb-3">
 				<label class="col-sm-4 form-label">Manufacturer :</label>
 				<div class="col-sm-8">
-					<select class="form-select select2" id="filterbymanufacturer" name="filterbymanufacturer" v-model="selectedManufacturers" multiple>
-						<option v-for="manufacturer in manufacturers" :key="manufacturer" :value="manufacturer">
+					<select class="form-select select2" id="filterbymanufacturer" name="filterbymanufacturer" v-model="filters.selectedManufacturers" multiple>
+						<option v-for="manufacturer in filters.manufacturers" :key="manufacturer" :value="manufacturer">
 							{{manufacturer}}
 						</option>
 					</select>
@@ -15,8 +15,8 @@
 			<div class="row mb-3">
 				<label class="col-sm-4 form-label">Colors :</label>
 				<div class="col-sm-8">
-					<select class="form-select select2" id="filterbycolor" name="filterbycolor" v-model="selectedColors" multiple>
-						<option v-for="color in colors" :key="color" :value="color">
+					<select class="form-select select2" id="filterbycolor" name="filterbycolor" v-model="filters.selectedColors" multiple>
+						<option v-for="color in filters.colors" :key="color" :value="color">
 							{{color}}
 						</option>
 					</select>
@@ -24,10 +24,10 @@
 			</div>
 
 			<label for="minPrice">Minimum Price :</label>
-			<input type="number" v-model="minPrice" id="minPrice" name="minPrice" step="1000" min="0" />
+			<input type="number" v-model="filters.minPrice" id="minPrice" name="minPrice" step="1000" min="0" />
 
-			<label for="maxPrice">Maximum Price :</label>
-			<input type="number" v-model="maxPrice" id="maxPrice" name="maxPrice" step="1000" min="0" />
+			<label for="maxPrice" class="form-label ms-3">Maximum Price :</label>
+			<input type="number" v-model="filters.maxPrice" id="maxPrice" name="maxPrice" step="1000" min="0" />
 
 			<div class="d-flex justify-content-end mb-3">
 				<button @@click="filterCars" class="btn btn-primary">Filter</button>
@@ -39,29 +39,138 @@
 <script>
 	Vue.component('filter-component', {
 		template: '#filter-component-template',
-		props: ['colors', 'manufacturers'],
 		data() {
 			return {
-				selectedColors: [],
-				selectedManufacturers: [],
-				minPrice: null,
-				maxPrice: null,
-				currentPage: 1
+				filters : {
+					selectedColors: [],
+					selectedManufacturers: [],
+					minPrice: null,
+					maxPrice: null,
+					colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
+					manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
+				},
+				pager:{
+					currentPage: 1,
+					pageSize: 10,
+					totalPages: 0,
+					totalItems: 0
+				},
+				
 			};
 		},
 		methods: {
-			filterCars: function() { // bu yerda functionni berib ketish kerak !
-				this.currentPage = 1;
-				this.$emit('apply-filters', {
-					selectedColors: this.selectedColors,
-					selectedManufacturers: this.selectedManufacturers,
-					minPrice: this.minPrice,
-					maxPrice: this.maxPrice,
-					currentPage: this.currentPage
-				});
+			applyFilters: async function () {
+				try {
+					let selected = document.getElementById("filterbycolor").selectedOptions;
+					let newArray = [];
+					for (let i = 0; i < selected.length; i++) {
+						newArray.push(selected[i].value)
+					}
+
+					let selectedmanufacturer = document.getElementById("filterbymanufacturer").selectedOptions;
+					let newArrayManufacturer = [];
+					for (let i = 0; i < selectedmanufacturer.length; i++) {
+						newArrayManufacturer.push(selectedmanufacturer[i].value)
+					}
+
+					let queryParams = new URLSearchParams();
+
+					if (newArray.length > 0) {
+						queryParams.append("filterbycolor", newArray.join(','));
+					}
+					if (newArrayManufacturer.length > 0) {
+						queryParams.append("filterbymanufacturer", newArrayManufacturer.join(','));
+					}
+					if (this.filters.minPrice) {
+						queryParams.append("minPrice", this.filters.minPrice);
+					}
+					if (this.filters.maxPrice) {
+						queryParams.append("maxPrice", this.filters.maxPrice);
+					}
+					if (this.pager.currentPage) {
+						queryParams.append("page", this.pager.currentPage);
+					}
+					if (this.pager.pageSize) {
+						queryParams.append("pageSize", this.pager.pageSize);
+					}
+
+					window.history.pushState(null, '', '/CarWithComponents/?' + queryParams.toString());
+					const response = await axios.get('/CarWithComponents/Filter?' + queryParams.toString());
+					console.log(response.data.data);
+					// this.cars = response.data.data;
+					this.filters.selectedColors = newArray;
+					this.filters.selectedManufacturers = newArrayManufacturer;
+					this.pager.totalItems = response.data.totalItems;
+					this.pager.totalPages = Math.ceil(this.pager.totalItems / this.pager.pageSize);
+					this.$emit('apply-filters', {
+						data: response.data.data,
+						currentPage: this.pager.currentPage,
+						totalPages: this.pager.totalPages,
+						
+					});
+				}
+				catch (error) {
+					console.error("Error Fetching filtered cars :", error);
+				}
+			},
+			filterCars: function () {
+				this.pager.currentPage = 1;
+				this.applyFilters();
 				
-			}
+			},
+			// changePage: async function (page) {
+			// 	if (page > 0 && page <= this.pager.totalPages) {
+			// 		this.pager.currentPage = page;
+			// 		this.applyFilters();
+			// 	}
+			// }
+		},
+
+		// computed: {
+		// 	query(){
+
+		// 		return window.location.search;
+		// 	}
+		// },
+		// watch: {
+		// 	'query'(to, from) {
+		// 		console.log(to, from);
+		// 	}
+		// },
+		beforeMount() {
+			const urlParams = new URLSearchParams(window.location.search);
+			const filtercolor = urlParams.get('filterbycolor');
+			const filtermanufacturer = urlParams.get('filterbymanufacturer');
+			const minprice = urlParams.get('minPrice');
+			const maxprice = urlParams.get('maxPrice');
+			const page = urlParams.get('page');
+			const pagesize = urlParams.get('pageSize');
+
+			this.filters.selectedColors = filtercolor ? filtercolor.split(',') : [];
+			this.filters.selectedManufacturers = filtermanufacturer ? filtermanufacturer.split(',') : [];
+			this.filters.minPrice = minprice ? parseFloat(minprice) : null;
+			this.filters.maxPrice = maxprice ? parseFloat(maxprice) : null;
+			this.pager.currentPage = page ? parseInt(page) : 1;
+			this.pager.pageSize = pagesize ? parseInt(pagesize) : 10;
+
+		},
+		mounted() {
+			this.applyFilters();
 		}
+
+		// methods: {
+		// 	filterCars: function() { // bu yerda functionni berib ketish kerak !
+		// 		this.currentPage = 1;
+		// 		this.$emit('apply-filters', {
+		// 			selectedColors: this.selectedColors,
+		// 			selectedManufacturers: this.selectedManufacturers,
+		// 			minPrice: this.minPrice,
+		// 			maxPrice: this.maxPrice,
+		// 			currentPage: this.currentPage
+		// 		});
+				
+		// 	}
+		//}
 	});
 </script>
 

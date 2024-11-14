@@ -1,31 +1,43 @@
 ﻿
-<script type="text/x-template" id="pagination-component-template">
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                <button class="page-link" @@click="changePage(currentPage - 1)">Previous</button>
-            </li>
-            <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
-                <button class="page-link" @@click="changePage(page)">{{ page }}</button>
-            </li>
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                <button class="page-link" @@click="changePage(currentPage + 1)">Next</button>
-            </li>
-        </ul>
-    </nav>
-</script>
+<template type="text/x-template" id="pagination-component-template">
+    <div id="pagination-component">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" :class="{ disabled : currentpage === 1 }">
+                    <button class="page-link" @@click="changePage(currentpage -1)">Pervious</button>
+                </li>
+                <li class="page-item" v-for="page in totalpages" :key="page" :class="{active : currentpage == page }">
+                    <button class="page-link" @@click="changePage(page)">{{page}}</button>
+                </li>
+                <li class="page-item" :class="{disabled : currentpage == totalpages}">
+                    <button class="page-link" @@click="changePage(currentpage+1)">Next</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</template>
 
 <script>
     Vue.component('pagination-component', {
         template: '#pagination-component-template',
-        props: ['currentPage', 'totalPages'],
+        props: ['currentpage', 'totalpages'],
+
         methods: {
             changePage(page) {
-                if (page > 0 && page <= this.totalPages) {
-                    this.currentPage = page;
-                    this.$emit('page-changed',page);
+                if (page > 0 && page <= this.totalpages) {
+
+                    let queryParams = new URLSearchParams(window.location.search);
+
+                    queryParams.set("page", page);
+
+                    window.history.pushState(null, '', '/CarWithComponents/?' + queryParams.toString());
+
+                    //window.location.reload();
+
+                    this.$emit("changePage", page);
                 }
             }
-        }
+        },
     });
 </script>
+
