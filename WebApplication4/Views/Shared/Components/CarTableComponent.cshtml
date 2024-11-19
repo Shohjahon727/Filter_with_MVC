@@ -32,9 +32,11 @@
     Vue.component("cartable-component", {
 
         template: "#cartable-component-template",
-        props: [
-            'cars'
-        ],
+        computed: {
+            cars() {    
+                return store.getters.getCars;
+            }
+        },
         data() {
             return {
                 colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
@@ -43,3 +45,5 @@
         }
     });
 </script>
+
+

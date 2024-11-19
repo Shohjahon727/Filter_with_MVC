@@ -33,6 +33,8 @@
 				<button @@click="filterCars" class="btn btn-primary">Filter</button>
 				<a href="/CarWithComponents" class="btn btn-secondary ms-3">Back to List</a>
 			</div>
+
+	
 	</div>
 </script>
 
@@ -59,84 +61,40 @@
 			};
 		},
 		methods: {
-			applyFilters: async function () {
-				try {
-					let selected = document.getElementById("filterbycolor").selectedOptions;
-					let newArray = [];
-					for (let i = 0; i < selected.length; i++) {
-						newArray.push(selected[i].value)
-					}
+			async filterCars() {
 
-					let selectedmanufacturer = document.getElementById("filterbymanufacturer").selectedOptions;
-					let newArrayManufacturer = [];
-					for (let i = 0; i < selectedmanufacturer.length; i++) {
-						newArrayManufacturer.push(selectedmanufacturer[i].value)
-					}
+				let selected = document.getElementById("filterbycolor").selectedOptions;
 
-					let queryParams = new URLSearchParams();
+				let newArray = [];
 
-					if (newArray.length > 0) {
-						queryParams.append("filterbycolor", newArray.join(','));
-					}
-					if (newArrayManufacturer.length > 0) {
-						queryParams.append("filterbymanufacturer", newArrayManufacturer.join(','));
-					}
-					if (this.filters.minPrice) {
-						queryParams.append("minPrice", this.filters.minPrice);
-					}
-					if (this.filters.maxPrice) {
-						queryParams.append("maxPrice", this.filters.maxPrice);
-					}
-					if (this.pager.currentPage) {
-						queryParams.append("page", this.pager.currentPage);
-					}
-					if (this.pager.pageSize) {
-						queryParams.append("pageSize", this.pager.pageSize);
-					}
-
-					window.history.pushState(null, '', '/CarWithComponents/?' + queryParams.toString());
-					const response = await axios.get('/CarWithComponents/Filter?' + queryParams.toString());
-					console.log(response.data.data);
-					// this.cars = response.data.data;
-					this.filters.selectedColors = newArray;
-					this.filters.selectedManufacturers = newArrayManufacturer;
-					this.pager.totalItems = response.data.totalItems;
-					this.pager.totalPages = Math.ceil(this.pager.totalItems / this.pager.pageSize);
-					this.$emit('apply-filters', {
-						data: response.data.data,
-						currentPage: this.pager.currentPage,
-						totalPages: this.pager.totalPages,
-						
-					});
+				for (let i = 0; i < selected.length; i++) {
+					newArray.push(selected[i].value)
 				}
-				catch (error) {
-					console.error("Error Fetching filtered cars :", error);
+
+				this.filters.selectedColors = newArray;
+
+				let selectedmanufacturer = document.getElementById("filterbymanufacturer").selectedOptions;
+
+				let newArrayManufacturer = [];
+
+				for (let i = 0; i < selectedmanufacturer.length; i++) {
+					newArrayManufacturer.push(selectedmanufacturer[i].value)
 				}
-			},
-			filterCars: function () {
+
+				this.filters.selectedManufacturers = newArrayManufacturer;
+
 				this.pager.currentPage = 1;
-				this.applyFilters();
-				
+
+				store.commit('setFilters', this.filters);
+
+				store.commit('setPager', this.pager);
+
+				store.dispatch('applyFilters');
 			},
-			// changePage: async function (page) {
-			// 	if (page > 0 && page <= this.pager.totalPages) {
-			// 		this.pager.currentPage = page;
-			// 		this.applyFilters();
-			// 	}
-			// }
+			
 		},
 
-		// computed: {
-		// 	query(){
 
-		// 		return window.location.search;
-		// 	}
-		// },
-		// watch: {
-		// 	'query'(to, from) {
-		// 		console.log(to, from);
-		// 	}
-		// },
 		beforeMount() {
 			const urlParams = new URLSearchParams(window.location.search);
 			const filtercolor = urlParams.get('filterbycolor');
@@ -152,25 +110,13 @@
 			this.filters.maxPrice = maxprice ? parseFloat(maxprice) : null;
 			this.pager.currentPage = page ? parseInt(page) : 1;
 			this.pager.pageSize = pagesize ? parseInt(pagesize) : 10;
+			// store.commit('setFilters', this.filters);
+			// store.commit('setPager', this.pager);
 
 		},
 		mounted() {
-			this.applyFilters();
+			store.dispatch('applyFilters');
 		}
-
-		// methods: {
-		// 	filterCars: function() { // bu yerda functionni berib ketish kerak !
-		// 		this.currentPage = 1;
-		// 		this.$emit('apply-filters', {
-		// 			selectedColors: this.selectedColors,
-		// 			selectedManufacturers: this.selectedManufacturers,
-		// 			minPrice: this.minPrice,
-		// 			maxPrice: this.maxPrice,
-		// 			currentPage: this.currentPage
-		// 		});
-				
-		// 	}
-		//}
 	});
 </script>
 
