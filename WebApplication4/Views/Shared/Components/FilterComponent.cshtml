@@ -60,6 +60,14 @@
 				
 			};
 		},
+		computed: {
+			filters() {
+				return store.getters.filters;
+			},
+			pager() {
+				return store.getters.pager;
+			}
+		},
 		methods: {
 			async filterCars() {
 
@@ -110,8 +118,7 @@
 			this.filters.maxPrice = maxprice ? parseFloat(maxprice) : null;
 			this.pager.currentPage = page ? parseInt(page) : 1;
 			this.pager.pageSize = pagesize ? parseInt(pagesize) : 10;
-			// store.commit('setFilters', this.filters);
-			// store.commit('setPager', this.pager);
+			
 
 		},
 		mounted() {

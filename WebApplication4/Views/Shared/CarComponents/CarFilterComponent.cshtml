@@ -1,0 +1,158 @@
+﻿@using WebApplication4.Entities
+@using WebApplication4.Enums
+
+<script type="text/x-template" id="carfilter-component-template">
+	<div id="carfilter-component">
+		<div class="row mb-3">
+			<label class="col-sm-4 form-label">Manufacturer :</label>
+			<div class="col-sm-8">
+				<select class="form-select select2" id="filterbymanufacturer" name="filterbymanufacturer" v-model="filters.selectedManufacturers" multiple>
+					<option v-for="manufacturer in filters.manufacturers" :key="manufacturer" :value="manufacturer">
+						{{manufacturer}}
+					</option>
+				</select>
+			</div>
+		</div>
+		<div class="row mb-3">
+			<label class="col-sm-4 form-label">Colors :</label>
+			<div class="col-sm-8">
+				<select class="form-select select2" id="filterbycolor" name="filterbycolor" v-model="filters.selectedColors" multiple>
+					<option v-for="color in filters.colors" :key="color" :value="color">
+						{{color}}
+					</option>
+				</select>
+			</div>
+		</div>
+
+		<label for="MinPrice">Minimum Price :</label>
+		<input type="number" v-model="filters.minPrice" id="MinPrice" name="MinPrice" step="1000" min="0" />
+
+		<label for="MaxPrice">Maximum Price :</label>
+		<input type="number" v-model="filters.maxPrice" id="MaxPrice" name="MaxPrice" step="1000" min="0" />
+
+		<div class="d-flex justify-content-end mb-3">
+			<button @@click="filterCars" class="btn btn-primary">Filter</button>
+			<a href="/Car" class="btn btn-secondary ms-3">Back to List</a>
+		</div>
+	</div>
+</script>
+
+
+<script>
+	Vue.component('carfilter-component',{
+		template: '#carfilter-component-template',
+		data() {
+			return {
+				filters: {
+					selectedColors: [],
+					selectedManufacturers: [],
+					minPrice: null,
+					maxPrice: null,
+					colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
+					manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
+				},
+				pager: {
+					currentPage: 1,
+					pageSize: 10,
+					totalPages: 0,
+					totalItems: 0
+				}
+			}
+		},
+		props:['page'],
+		watch: {
+			'page'(to,from){
+				this.pager.currentPage = this.page;
+				this.applyFilters();
+			}
+		},
+		methods: {
+			applyFilters: async function() {
+				try {
+					let selected = document.getElementById("filterbycolor").selectedOptions;
+					let newArray = [];
+					for (let i = 0; i < selected.length; i ++)
+					{
+						newArray.push(selected[i].value);
+					}
+
+					let selectedM = document.getElementById("filterbymanufacturer").selectedOptions;
+					let newArrayM = [];
+					for (let i = 0; i < selectedM.length; i ++ )
+					{
+						newArrayM.push(selectedM[i].value);
+					}
+
+					let queryParams = new URLSearchParams();
+					if (newArray.length > 0)
+					{
+						queryParams.append("filterbycolor", newArray.join(','));
+					}
+					if (newArrayM.length > 0)
+					{
+						queryParams.append("filterbymanufacturer",newArrayM.join(','));
+					}
+					if (this.filters.minPrice)
+					{
+						queryParams.append("MinPrice",this.filters.minPrice);
+					}
+					if (this.filters.maxPrice)
+					{
+						queryParams.append("MaxPrice",this.filters.maxPrice);
+					}
+					if (this.pager.currentPage)
+					{
+						queryParams.append("page",this.pager.currentPage);
+					}
+					if (this.pager.pageSize)
+					{
+						queryParams.append("pageSize",this.pager.pageSize);
+					}
+					window.history.pushState(null,'','/Car/?' + queryParams.toString());
+					const response = await axios.get('/Car/Filter?' + queryParams.toString());
+
+					console.log(response.data.data);
+					this.filters.selectedColors = newArray;
+					this.filters.selectedManufacturers = newArrayM;
+					this.pager.totalItems = response.data.totalItems;
+					this.pager.totalPages = Math.ceil(this.pager.totalItems/this.pager.pageSize);
+					this.$emit('apply-filters',{
+						data: response.data.data,
+						currentPage: this.pager.currentPage,
+						totalPages: this.pager.totalPages
+					});
+				}
+				catch(error) {
+					console.error("Error fetching filtered cars :", error);
+				}
+			},
+			filterCars : function() {
+				this.pager.currentPage = 1;
+				this.applyFilters();
+			}
+		},
+
+		beforeMount() {
+			const urlParams = new URLSearchParams(window.location.search);
+			const filtercolor = urlParams.get('filterbycolor');
+			const filtermanufacturer = urlParams.get('filterbymanufacturer');
+			const minprice = urlParams.get('MinPrice');
+			const maxprice = urlParams.get('MaxPrice');
+			const page = urlParams.get('page');
+			const pagesize = urlParams.get('pageSize');
+
+			this.filters.selectedColors = filtercolor ? filtercolor.split(',') : [];
+			this.filters.selectedManufacturers = filtermanufacturer ? filtermanufacturer.split(',') : [];
+			this.filters.minPrice = minprice ? parseFloat(minPrice): null,
+			this.filters.maxPrice = maxprice ? parseFloat(maxPrice): null,
+			this.pager.currentPage = page ? parseInt(page) : 1,
+			this.pager.pageSize = pagesize ? parseInt(pagesize): 10;
+		},
+		mounted() {
+			this.applyFilters();
+		},
+		
+
+
+	})
+</script>

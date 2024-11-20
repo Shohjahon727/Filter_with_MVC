@@ -1,0 +1,41 @@
+﻿@using WebApplication4.Entities
+@using WebApplication4.Enums
+
+<script type="text/x-template" id="cartable-component-template">
+	<div id="cartable-component">
+		<table class="table table-striped table-bordered">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>Manufacturer</th>
+						<th>Model</th>
+						<th>Color</th>
+						<th>Price</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="car in cars" :key="car.id">
+						<td>{{car.id}}</td>
+						<td>{{manufacturers[car.manufacturer]}}</td>
+						<td>{{car.model}}</td>
+						<td>{{colors[car.color]}}</td>
+						<td>{{car.price}}</td>
+					</tr>
+				</tbody>
+		</table>
+
+	</div>
+</script>
+
+<script>
+	Vue.component('cartable-component', {
+		template: '#cartable-component-template',
+		props: ['cars'],
+		data() {
+			return {
+			colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
+			manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
+			}
+		}
+	})
+</script>

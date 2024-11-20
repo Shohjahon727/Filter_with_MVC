@@ -20,23 +20,8 @@ const store = new Vuex.Store({
         cars: []
     },
     getters: {
-        getColors(state) {
-            return state.filters.colors;
-        },
-        getManufacturers(state) {
-            return state.filters.manufacturers;
-        },
-        getSelectedColors(state) {
-            return state.filters.selectedColors;
-        },
-        getSelectedManufacturers(state) {
-            return state.filters.selectedManufacturers;
-        },
-        getMinPrice(state) {
-            return state.filters.minPrice;
-        },
-        getMaxPrice(state) {
-            return state.filters.maxPrice;
+        getFilters(state) {
+            return state.filters;
         },
         getPager(state) {
             return state.pager;
@@ -55,9 +40,7 @@ const store = new Vuex.Store({
         setPager(state, pager) {
             state.pager = pager;
         },
-        setColors(state, colors) {
-            state.filters.colors = colors;
-        }
+       
     },
 
     actions: {
