@@ -12,60 +12,49 @@
 
 <div id="app">
 
+		<carfilter-component
+			ref="filterComponent"
+			@* :page="currentPage" *@
+			@* @@apply-filters="SetData" *@
+		></carfilter-component>
+
+
+		<div class="row pb-3">
+			<div class="col-6">
+			</div>
+			<div class="col-6 text-end">
+				<a asp-controller="Car" asp-action="Create" class="btn btn-primary">
+					<i class="bi bi-plus-circle"></i> Create New Car
+				</a>
+			</div>
+		</div>
+
 	
-
-	<carfilter-component :page="currentPage"
-						 @@apply-filters="SetData"></carfilter-component>
-	<div class="row pb-3">
-		<div class="col-6">
-		</div>
-		<div class="col-6 text-end">
-			<a asp-controller="Car" asp-action="Create" class="btn btn-primary">
-				<i class="bi bi-plus-circle"></i> Create New Car
-			</a>
-		</div>
-	</div>
-
-	<div>
-		<cartable-component :cars="cars">
-
+		<cartable-component  ref="carComponent"
+			@* :cars="cars"> *@>
 		</cartable-component>
 		
-		<pagination-component
-		 @@page-changed="onPageChange"
-		:currentpage="currentPage"
-		:totalpages="totalPages"
-		
+		<pagination-component ref="paginationComponent"
+			@*  @@page-changed="onPageChange" *@
 		></pagination-component>
-	</div>
+
 </div>
-
-
-
-
-
 
 <script>
 	new Vue({
 		el: '#app',
-		data() {
-			return {
-				cars: '',
-				currentPage: 1,
-				totalPages : 0,
-			}
-		},
-		methods: {
-			SetData(data){
-				this.cars = data.data
-				this.currentPage = data.currentPage,
-				this.totalPages = data.totalPages
-			},
-			onPageChange(page) {
-				this.currentPage = page;
-			}
-		}
-			
 		
+		// methods: {
+		// 	SetData(data){
+		// 		// this.cars = data.data
+		// 		// this.$root.$refs.currentPage = data.currentPage,
+		// 		// this.$root.$refs.totalPages = data.totalPages
+		// 	},
+		// 	onPageChange(page) { 2-usul
+		// 		this.currentPage = page;
+		// 		this.$refs.filterComponent.pager.currentPage = page; 
+		// 		this.$refs.filterComponent.applyFilters();
+		// 	}
+		// }
 	});
 </script>

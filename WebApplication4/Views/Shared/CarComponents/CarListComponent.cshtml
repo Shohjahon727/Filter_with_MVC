@@ -30,9 +30,10 @@
 <script>
 	Vue.component('cartable-component', {
 		template: '#cartable-component-template',
-		props: ['cars'],
+		// props: ['cars'],
 		data() {
 			return {
+			cars:'',
 			colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
 			manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
 			}
