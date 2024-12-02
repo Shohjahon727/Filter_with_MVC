@@ -30,6 +30,25 @@
 		<label for="MaxPrice">Maximum Price :</label>
 		<input type="number" v-model="filters.maxPrice" id="MaxPrice" name="MaxPrice" step="1000" min="0" />
 
+
+		@* <div class="sort-options mt-3">
+			<label for="sortBy">Sort By:</label>
+			<select id="sortBy" name="sortBy">
+				<option value="">All</option>
+				<option value="price">Price</option>
+				<option value="manufacturer">Manufacturer</option>
+				<option value="color">Color</option>
+				<option value="model">Model</option>
+			</select>
+
+			<label for="sortOrder">Sort Order:</label>
+			<select id="sortOrder" name="sortOrder">
+				<option value="">All</option>
+				<option value="asc">Ascending</option>
+				<option value="desc">Descending</option>
+			</select>
+		</div> *@
+
 		<div class="d-flex justify-content-end mb-3">
 			<button @@click="filterCars" class="btn btn-primary">Filter</button>
 			<a href="/Car" class="btn btn-secondary ms-3">Back to List</a>
@@ -48,11 +67,12 @@
 					selectedManufacturers: [],
 					minPrice: null,
 					maxPrice: null,
+					// sortBy: '', 
+					// sortOrder: '', 
 					colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
 					manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
 				},
-				
-				
+
 			}
 		},
 		// props:['page'],  2 -usul 
@@ -79,7 +99,20 @@
 					{
 						newArrayM.push(selectedM[i].value);
 					}
-					
+
+					//sorting----------------------------
+					let selectedSortOrder = document.getElementById("sortOrder")?.selectedOptions[0];
+					let  sortOrder = '';
+					if (selectedSortOrder != null) {
+						sortOrder = selectedSortOrder.value;
+					}
+
+					let selectedSortBy = document.getElementById("sortBy")?.selectedOptions[0];
+					let sortBy = '';
+					if (selectedSortBy != null) {
+						sortBy = selectedSortBy.value;
+					}
+					//-----------------------------------
 					let queryParams = new URLSearchParams();
 
 					if (newArray.length > 0)
@@ -98,14 +131,23 @@
 					{
 						queryParams.append("MaxPrice",this.filters.maxPrice);
 					}
-					if (this.$root.$refs.paginationComponent.currentPage)
+					 // sotring --------------------------------------------
+					if (sortBy)
 					{
-						queryParams.append("page",this.$root.$refs.paginationComponent.currentPage);
+						console.log(sortBy.value);
+						queryParams.append("sortBy", sortBy);
 					}
-					if (this.$root.$refs.paginationComponent.pageSize)
+					if (sortOrder)
 					{
-						queryParams.append("pageSize",this.$root.$refs.paginationComponent.pageSize);
+						console.log(sortOrder.value);
+						queryParams.append("sortOrder", sortOrder);
 					}
+					//------------------------------------------------------
+					this.$root.$refs.paginationComponent.queryParamsPager.forEach((value,key)=> {
+						queryParams.append(key, value);
+					});
+					
+
 					window.history.pushState(null,'','/Car/?' + queryParams.toString());
 					const response = await axios.get('/Car/Filter?' + queryParams.toString());
 
@@ -125,9 +167,10 @@
 				}
 			},
 			filterCars : function() {
-				this.$root.$refs.paginationComponent.currentPage = 1;
+				this.$root.$refs.paginationComponent.restart();
 				this.applyFilters();
-			}
+			},
+			
 		},
 
 		// beforeMount() {
@@ -143,8 +186,8 @@
 		// 	this.filters.selectedManufacturers = filtermanufacturer ? filtermanufacturer.split(',') : [];
 		// 	this.filters.minPrice = minprice ? parseFloat(minPrice): null,
 		// 	this.filters.maxPrice = maxprice ? parseFloat(maxPrice): null,
-		// 	this.pager.currentPage = page ? parseInt(page) : 1,
-		// 	this.pager.pageSize = pagesize ? parseInt(pagesize): 10;
+		// 	this.$root.$refs.paginationComponent.currentPage = page ? parseInt(page) : 1,
+		// 	this.$root.$refs.paginationComponent.pageSize = pagesize ? parseInt(pagesize): 10;
 		// },
 		mounted() {
 
@@ -155,7 +198,8 @@
 			this.filters.maxPrice = urlParams.get('MaxPrice') || null;
 			this.$root.$refs.paginationComponent.currentPage = parseInt(urlParams.get('page')) || 1;
 			this.$root.$refs.paginationComponent.pageSize = parseInt(urlParams.get('pageSize')) || 10;
-
+			this.filters.sortBy = urlParams.get('sortBy') || '',
+			this.filters.sortOrder = urlParams.get('sortOrder') || '',
 			this.applyFilters();
 			
 		},

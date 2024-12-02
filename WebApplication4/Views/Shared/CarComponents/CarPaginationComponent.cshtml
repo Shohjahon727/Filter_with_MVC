@@ -23,7 +23,8 @@
 			return {
 				currentPage: 1,
 				pageSize: 10,
-				totalItems: 0
+				totalItems: 0,
+				queryParamsPager : new URLSearchParams()
 			}
 		},
 		methods: {
@@ -35,12 +36,25 @@
 				{
 					this.currentPage = page;
 
-					this.$root.$refs.filterComponent.applyFilters();
+					let queryparams = new URLSearchParams();
 
+					queryparams.set('page', this.currentPage);
+
+					queryparams.set('pageSize', this.pageSize);
+
+					this.queryParamsPager = queryparams;
+					
+
+					this.$root.$refs.filterComponent.applyFilters();
 					// this.$emit('page-changed', page);
 					
 				}
+			},
+			restart() {
+				this.currentPage = 1;
+				this.queryParamsPager = new URLSearchParams();
 			}
+			
 		},
 		computed : {
 			totalPages() {
@@ -48,7 +62,8 @@
 			}
 		},
 		
+		
 	})
-</script>
+</script>	
 
 

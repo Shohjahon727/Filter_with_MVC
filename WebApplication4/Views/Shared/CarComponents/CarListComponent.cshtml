@@ -1,4 +1,4 @@
-﻿@using WebApplication4.Entities
+﻿@* @using WebApplication4.Entities
 @using WebApplication4.Enums
 
 <script type="text/x-template" id="cartable-component-template">
@@ -39,4 +39,492 @@
 			}
 		}
 	})
+</script> *@
+
+@using WebApplication4.Entities
+@using WebApplication4.Enums
+
+
+<script type="text/x-template" id="cartable-component-template">
+    <div id="cartable-component">
+       <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th @@click="sortTable('id')">
+              <div class="text-center">
+                Id
+              </div>
+            </th>
+            <th @@click="sortTable('manufacturer')">
+              <div class="text-center">
+                <span class="text-with-sort">
+                      Manufacturer
+                      <span class="sort-icon">
+                        <i class="bi bi-caret-up-fill" :class="{'text-primary': sortBy === 'manufacturer' && sortOrder === 'asc'}"></i>
+                        <i class="bi bi-caret-down-fill" :class="{'text-primary': sortBy === 'manufacturer' && sortOrder === 'desc'}"></i>
+                      </span>
+                </span>
+              </div>
+            </th>
+            <th @@click="sortTable('model')">
+              <div class="text-center">
+                <span class="text-with-sort">
+                      Model
+                      <span class="sort-icon">
+                        <i class="bi bi-caret-up-fill" :class="{'text-primary': sortBy === 'model' && sortOrder === 'asc'}"></i>
+                        <i class="bi bi-caret-down-fill" :class="{'text-primary': sortBy === 'model' && sortOrder === 'desc'}"></i>
+                      </span>
+                </span>
+              </div>
+            </th>
+            <th @@click="sortTable('color')">
+              <div class="text-center">
+                   <span class="text-with-sort">
+                          Color
+                          <span class="sort-icon">
+                            <i class="bi bi-caret-up-fill" :class="{'text-primary': sortBy === 'color' && sortOrder === 'asc'}"></i>
+                            <i class="bi bi-caret-down-fill" :class="{'text-primary': sortBy === 'color' && sortOrder === 'desc'}"></i>
+                          </span>
+                    </span>
+              </div>
+            </th>
+            <th @@click="sortTable('price')">
+              <div class="text-center">
+                    <span class="text-with-sort">
+                      Price
+                      <span class="sort-icon">
+                        <i class="bi bi-caret-up-fill" :class="{'text-primary': sortBy === 'price' && sortOrder === 'asc'}"></i>
+                        <i class="bi bi-caret-down-fill" :class="{'text-primary': sortBy === 'price' && sortOrder === 'desc'}"></i>
+                      </span>
+                    </span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="car in sortedCars" :key="car.id">
+            <td>{{ car.id }}</td>
+            <td>{{ manufacturers[car.manufacturer] }}</td>
+            <td>{{ car.model }}</td>
+            <td>{{ colors[car.color] }}</td>
+            <td>{{ car.price }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 </script>
+
+<style>
+    th {
+        cursor: pointer;
+    }
+
+    .text-with-sort {
+        display: inline-flex; /* Matn va iconlarni yonma-yon joylashtiradi */
+        align-items: center; /* Vertikal markazlash */
+    }
+
+    .sort-icon {
+        display: flex;
+        flex-direction: column; /* Iconlarni vertikal tagma-tag joylashtiradi */
+        margin-left: 2px; /* Matn va icon orasidagi bo'shliq */
+        align-items: center; /* Iconlarni gorizontal markazlash */
+    }
+
+    .sort-icon i {
+            font-size: 10px; /* Icon o‘lchamini moslashtirish */
+            color: lightgrey; /* Iconlarning odatiy rangini belgilash */
+            line-height: 1; /* Iconlar orasidagi vertikal bo'shliqni olib tashlash */
+    }
+
+    .sort-icon i.text-primary {
+                color: blue; /* Faol rang */
+    }    
+
+    .text-primary {
+        color: blue; /* ASC yoki DESC iconasi ko'k rangda bo'ladi */
+    }
+
+</style>
+
+<script>
+    Vue.component('cartable-component', {
+      template: '#cartable-component-template',
+      data() {
+        return {
+          cars: [], // Avtomobillar ro'yxati
+          colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))) ,
+          manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))) ,
+          sortBy: '', // Saralash maydoni
+          sortOrder: '', // Saralash tartibi
+        };
+      },
+    
+      computed: {
+        // Saralangan avtomobillar
+        sortedCars() {
+          if (this.sortBy) {
+            return [...this.cars].sort((a, b) => {
+
+              const fieldA = a[this.sortBy];
+              const fieldB = b[this.sortBy];
+
+              const valueA = this.getEnumText(fieldA);
+              const valueB = this.getEnumText(fieldB);
+
+              let comparison = 0;
+
+              if (valueA < valueB) {
+                comparison = -1;
+              } else if (valueA > valueB) {
+                comparison = 1;
+              }
+
+              return this.sortOrder === 'desc' ? -comparison : comparison;
+            });
+          }
+          return this.cars;
+        },
+      },
+      methods: {
+        getEnumText(value) {
+          if (typeof value === 'string') {
+            return value; // Agar value allaqachon string bo'lsa, o'zgartirish shart emas
+          }
+          // Agar enum qiymati raqamli bo'lsa, uni enum nomlariga mos keltirish
+          return value.toString();
+        },
+        // Saralash boshqaruvi
+        sortTable(field) {
+          if (this.sortBy !== field) {
+            // Birinchi bosish - ASC
+            this.sortBy = field;
+            this.sortOrder = 'asc';
+          } else if (this.sortOrder === 'asc') {
+            // Ikkinchi bosish - DESC
+            this.sortOrder = 'desc';
+          } else {
+            // Uchinchi bosish - Saralashni o'chirish
+            this.sortBy = '';
+            this.sortOrder = '';
+          }
+        },
+      }
+    });
+</script>
+
+
+
+
+@*
+    Izoh   :  2 ta strelka yonma - yon turadi
+    "asc"  :  ishlaganda tepaga qaragan strelka kok rangda boladi , descning strelkasi oz rangida qoladi
+    "desc" :  ishlaganda esa pastga qaragan strelga kok boladi , ascning strelkasi oz rangida qoladi 
+    "3"    :  martta bosilganda esa strelkalar oz rangida qoladi va jadval sortlanmagan korinishiga qaytadi 
+
+@using WebApplication4.Entities
+@using WebApplication4.Enums
+<script type="text/x-template" id="cartable-component-template">
+    <div id="cartable-component">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th @@click="sortTable('id')">
+              <div class="text-center">
+                Id
+                <span class="sort-icon">
+                  <span :class="{'filled': sortBy === 'id' && sortOrder === 'asc'}">↑</span>
+                  <span :class="{'filled': sortBy === 'id' && sortOrder === 'desc'}">↓</span>
+                </span>
+              </div>
+            </th>
+            <th @@click="sortTable('manufacturer')">
+              <div class="text-center">
+                Manufacturer
+                <span class="sort-icon">
+                  <span :class="{'filled': sortBy === 'manufacturer' && sortOrder === 'asc'}">↑</span>
+                  <span :class="{'filled': sortBy === 'manufacturer' && sortOrder === 'desc'}">↓</span>
+                </span>
+              </div>
+            </th>
+            <th @@click="sortTable('model')">
+              <div class="text-center">
+                Model
+                <span class="sort-icon">
+                  <span :class="{'filled': sortBy === 'model' && sortOrder === 'asc'}">↑</span>
+                  <span :class="{'filled': sortBy === 'model' && sortOrder === 'desc'}">↓</span>
+                </span>
+              </div>
+            </th>
+            <th @@click="sortTable('color')">
+              <div class="text-center">
+                Color
+                <span class="sort-icon">
+                  <span :class="{'filled': sortBy === 'color' && sortOrder === 'asc'}">↑</span>
+                  <span :class="{'filled': sortBy === 'color' && sortOrder === 'desc'}">↓</span>
+                </span>
+              </div>
+            </th>
+            <th @@click="sortTable('price')">
+              <div class="text-center">
+                Price
+                <span class="sort-icon">
+                  <span :class="{'filled': sortBy === 'price' && sortOrder === 'asc'}">↑</span>
+                  <span :class="{'filled': sortBy === 'price' && sortOrder === 'desc'}">↓</span>
+                </span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="car in sortedCars" :key="car.id">
+            <td>{{ car.id }}</td>
+            <td>{{ manufacturers[car.manufacturer] }}</td>
+            <td>{{ car.model }}</td>
+            <td>{{ colors[car.color] }}</td>
+            <td>{{ car.price }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</script>
+
+<style>
+    th {
+        cursor: pointer;
+    }
+
+    .sort-icon span {
+        margin-left: 10px;
+        font-size: 15px;
+    }
+
+        .sort-icon span.filled {
+            color: blue;
+            font-weight: bold;
+        }
+</style>
+
+<script>
+    Vue.component('cartable-component', {
+      template: '#cartable-component-template',
+      data() {
+        return {
+          cars: [], // Avtomobillar ro'yxati
+          colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
+          manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
+          sortBy: '', // Saralash maydoni
+          sortOrder: '', // Saralash tartibi
+        };
+      },
+      computed: {
+        // Saralangan avtomobillar
+        sortedCars() {
+          if (this.sortBy) {
+            return [...this.cars].sort((a, b) => {
+              const fieldA = a[this.sortBy];
+              const fieldB = b[this.sortBy];
+              let comparison = 0;
+
+              if (fieldA < fieldB) {
+                comparison = -1;
+              } else if (fieldA > fieldB) {
+                comparison = 1;
+              }
+
+              return this.sortOrder === 'desc' ? -comparison : comparison;
+            });
+          }
+          return this.cars;
+        },
+      },
+      methods: {
+        // Saralash boshqaruvi
+        sortTable(field) {
+          if (this.sortBy !== field) {
+            // Birinchi bosish - ASC
+            this.sortBy = field;
+            this.sortOrder = 'asc';
+          } else if (this.sortOrder === 'asc') {
+            // Ikkinchi bosish - DESC
+            this.sortOrder = 'desc';
+          } else {
+            // Uchinchi bosish - Saralashni o'chirish
+            this.sortBy = '';
+            this.sortOrder = '';
+          }
+        },
+        fetchCars() {
+          axios
+            .get('/Cars/Filter?')
+            .then((response) => {
+              this.cars = response.data;
+            })
+            .catch((error) => {
+              console.error('Avtomobillarni olishda xatolik:', error);
+            });
+        },
+      },
+      mounted() {
+        this.fetchCars();
+      },
+    });
+</script> *@
+
+
+@*  Izoh page yartilganda strelkalar bolmaydi 
+    1- martta button bosilgandan keyin strelka chqadi asc boyicha
+    2- martta bosilganda desc boyicha sortlaydi vay tepaga bolgan strelga ochib pastga bolagan strelka paydo boladi 
+
+<script type="text/x-template" id="cartable-component-template">
+    <div id="cartable-component">
+      <!-- Jadval -->
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <!-- Har bir ustun uchun to‘liq maydon egallovchi buton -->
+            <th @@click="sortTable('id')">
+                <div class="text-center">
+                    Id
+                    <span v-if="sortBy === 'id' && sortOrder === 'asc'">↑</span>
+                    <span v-if="sortBy === 'id' && sortOrder === 'desc'">↓</span>
+                </div>
+            </th>
+            <th @@click="sortTable('manufacturer')">
+                <div class="text-center">
+                    Manufacturer
+                    <span v-if="sortBy === 'manufacturer' && sortOrder === 'asc'">↑</span>
+                    <span v-if="sortBy === 'manufacturer' && sortOrder === 'desc'">↓</span>
+                </div>
+            </th>
+            <th @@click="sortTable('model')">
+                <div class="text-center">
+                    Model
+                    <span v-if="sortBy === 'model' && sortOrder === 'asc'">↑</span>
+                    <span v-if="sortBy === 'model' && sortOrder === 'desc'">↓</span>
+                </div>
+             
+            </th>
+            <th @@click="sortTable('color')">
+                <div class=" text-center">
+                    Color
+                    <span v-if="sortBy === 'color' && sortOrder === 'asc'">↑</span>
+                    <span v-if="sortBy === 'color' && sortOrder === 'desc'">↓</span>
+                </div>
+            </th>
+            <th @@click="sortTable('price')">
+                <div class="text-center">
+                    Price
+                    <span v-if="sortBy === 'price' && sortOrder === 'asc'">↑</span>
+                    <span v-if="sortBy === 'price' && sortOrder === 'desc'">↓</span>
+                </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="car in sortedCars" :key="car.id">
+            <td>{{ car.id }}</td>
+            <td>{{ manufacturers[car.manufacturer] }}</td>
+            <td>{{ car.model }}</td>
+            <td>{{ colors[car.color] }}</td>
+            <td>{{ car.price }}</td>
+          </tr>
+        </tbody>
+
+      </table>
+    </div>
+</script>
+
+<style>
+   
+    th {
+        cursor : pointer;
+    }
+    /* div {
+        cursor : pointer
+    } */
+</style>
+
+<script>
+    Vue.component('cartable-component', {
+      template: '#cartable-component-template',
+      data() {
+        return {
+          cars: [], // Avtomobillar ro'yxati
+          colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
+          manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
+          sortBy: '', // Sortlash maydoni
+          sortOrder: '', // Sortlash tartibi
+          initialState: true, // Boshlang'ich holat
+        };
+      },
+      computed: {
+        // Sortlash
+        sortedCars() {
+          if (this.sortBy) {
+            return this.cars.sort((a, b) => {
+              const fieldA = a[this.sortBy];
+              const fieldB = b[this.sortBy];
+              let comparison = 0;
+
+              if (fieldA < fieldB) {
+                comparison = -1;
+              } else if (fieldA > fieldB) {
+                comparison = 1;
+              }
+
+              return this.sortOrder === 'desc' ? -comparison : comparison;
+            });
+          }
+          return this.cars;
+        },
+      },
+      methods: {
+        // Sortlashni boshqarish
+        sortTable(field) {
+          if (this.initialState) {
+            this.initialState = false;
+            this.sortBy = field;
+            this.sortOrder = 'asc';
+          } 
+          else if (this.sortBy === field)
+          {
+            if (this.sortOrder === 'asc') 
+            {
+              this.sortOrder = 'desc';
+            } 
+            else 
+            {
+              this.sortBy = '';
+              this.sortOrder = '';
+              this.initialState = true;
+              this.fetchCars(); // Bazadagi holatga qaytarish
+            }
+          } 
+          else 
+          {
+            this.sortBy = field;
+            this.sortOrder = 'asc';
+          }
+        },
+        // Avtomobillarni olish
+        fetchCars() {
+          axios.get('/Cars/Filter?')
+            .then(response => {
+              this.cars = response.data;
+            })
+            .catch(error => {
+              console.error('Avtomobillarni olishda xatolik:', error);
+            });
+        },
+      },
+      mounted() {
+        this.fetchCars();
+      },
+    });
+</script>
+ *@
+

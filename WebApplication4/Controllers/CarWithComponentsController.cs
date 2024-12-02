@@ -63,8 +63,7 @@ namespace WebApplication4.Controllers
                     Color = car.Color,
                     Model = car.Model,
                     Price = car.Price,
-					page = page,
-					pageSize = pageSize,
+					
                 });
 			return Json(new
 			{
