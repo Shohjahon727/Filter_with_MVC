@@ -12,7 +12,7 @@
 		BYD,
 		Toyota,
 		Zeekr,
-		Lambirghine,
+		Lamborghine,
 		Audi
 	}
 }

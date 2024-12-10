@@ -30,8 +30,8 @@
 		<label for="MaxPrice">Maximum Price :</label>
 		<input type="number" v-model="filters.maxPrice" id="MaxPrice" name="MaxPrice" step="1000" min="0" />
 
-
-		@* <div class="sort-options mt-3">
+		@*    Sotring ----------------------
+		<div class="sort-options mt-3">
 			<label for="sortBy">Sort By:</label>
 			<select id="sortBy" name="sortBy">
 				<option value="">All</option>
@@ -47,12 +47,15 @@
 				<option value="asc">Ascending</option>
 				<option value="desc">Descending</option>
 			</select>
-		</div> *@
+		</div>
+		//---------------------------------------------- *@
+
 
 		<div class="d-flex justify-content-end mb-3">
 			<button @@click="filterCars" class="btn btn-primary">Filter</button>
 			<a href="/Car" class="btn btn-secondary ms-3">Back to List</a>
 		</div>
+			
 	</div>
 </script>
 
@@ -67,8 +70,8 @@
 					selectedManufacturers: [],
 					minPrice: null,
 					maxPrice: null,
-					// sortBy: '', 
-					// sortOrder: '', 
+					sortBy: '', 
+					sortOrder: '', 
 					colors: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Colors)))),
 					manufacturers: @Html.Raw(Json.Serialize(Enum.GetNames(typeof(Manufacturers)))),
 				},
@@ -100,19 +103,21 @@
 						newArrayM.push(selectedM[i].value);
 					}
 
-					//sorting----------------------------
-					let selectedSortOrder = document.getElementById("sortOrder")?.selectedOptions[0];
-					let  sortOrder = '';
-					if (selectedSortOrder != null) {
-						sortOrder = selectedSortOrder.value;
-					}
+					// Sorting ---------------------------------------------------------------------
+					// let selectedSortOrder = document.getElementById("sortOrder")?.selectedOptions[0];
+					// let sortOrder = '';
+					// if (selectedSortOrder != null) {
+					// 	sortOrder = selectedSortOrder.value;
+					// }
 
-					let selectedSortBy = document.getElementById("sortBy")?.selectedOptions[0];
-					let sortBy = '';
-					if (selectedSortBy != null) {
-						sortBy = selectedSortBy.value;
-					}
-					//-----------------------------------
+					// let selectedSortBy = document.getElementById("sortBy")?.selectedOptions[0];
+					// let sortBy = '';
+					// if (selectedSortBy != null)
+					// {
+					// 	sortBy = selectedSortBy.value;
+					// }
+					//--------------------------------------------------------------------------------
+
 					let queryParams = new URLSearchParams();
 
 					if (newArray.length > 0)
@@ -132,21 +137,26 @@
 						queryParams.append("MaxPrice",this.filters.maxPrice);
 					}
 					 // sotring --------------------------------------------
-					if (sortBy)
-					{
-						console.log(sortBy.value);
-						queryParams.append("sortBy", sortBy);
-					}
-					if (sortOrder)
-					{
-						console.log(sortOrder.value);
-						queryParams.append("sortOrder", sortOrder);
-					}
+					// if (sortBy)
+					// {
+					// 	console.log("sortby",sortBy);
+					// 	queryParams.append("sortBy", sortBy);
+					// }
+					// if (sortOrder)
+					// {
+					// 	console.log("sortorder",sortOrder);
+					// 	queryParams.append("sortOrder", sortOrder);
+					// }
 					//------------------------------------------------------
+					console.log("pagesize",this.$root.$refs.carComponent.queryParamsTable);
+
 					this.$root.$refs.paginationComponent.queryParamsPager.forEach((value,key)=> {
 						queryParams.append(key, value);
 					});
-					
+
+					this.$root.$refs.carComponent.queryParamsTable.forEach((value,key)=> {
+						queryParams.append(key, value);
+					});
 
 					window.history.pushState(null,'','/Car/?' + queryParams.toString());
 					const response = await axios.get('/Car/Filter?' + queryParams.toString());
@@ -156,6 +166,7 @@
 					this.filters.selectedManufacturers = newArrayM;
 					this.$root.$refs.carComponent.cars = response.data.data;
 					this.$root.$refs.paginationComponent.totalItems = response.data.totalItems;
+					console.log(response.data.totalItems);
 					// this.$emit('apply-filters',{
 					// 	// data: response.data.data,
 					// 	// currentPage: this.$root.$refs.currentPage,
@@ -198,8 +209,10 @@
 			this.filters.maxPrice = urlParams.get('MaxPrice') || null;
 			this.$root.$refs.paginationComponent.currentPage = parseInt(urlParams.get('page')) || 1;
 			this.$root.$refs.paginationComponent.pageSize = parseInt(urlParams.get('pageSize')) || 10;
-			this.filters.sortBy = urlParams.get('sortBy') || '',
-			this.filters.sortOrder = urlParams.get('sortOrder') || '',
+			this.$root.$refs.paginationComponent.getQuery();
+			console.log("pagesize",this.$root.$refs.paginationComponent.queryParamsPager);
+			this.sortBy = urlParams.get('sortBy') || '';
+			this.sortOrder = urlParams.get('sortOrder') || '';
 			this.applyFilters();
 			
 		},

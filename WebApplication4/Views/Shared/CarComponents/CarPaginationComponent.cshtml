@@ -1,18 +1,32 @@
 ﻿<script type="text/x-template" id="pagination-component-template">
-	<div id="pagination-component">
-		<nav aria-label="Page navigation">
-			<ul class="pagination justify-content-center">
-				<li class="page-item" :class="{ disabled : currentPage === 1 }">
-					<button class="page-link" @@click="changePage(currentPage -1)">Pervious</button>
-				</li>
-				<li class="page-item" v-for="page in totalPages" :key="page" :class="{active : currentPage == page }">
-					<button class="page-link" @@click="changePage(page)">{{page}}</button>
-				</li>
-				<li class="page-item" :class="{disabled : currentPage == totalPages}">
-					<button class="page-link" @@click="changePage(currentPage+1)">Next</button>
-				</li>
-			</ul>
-		</nav>
+	
+	<div class="row" id="pagination-component">
+
+		<div class="">
+			<div class="col-sm-3">
+				<label for="pageSize">Items per page:</label>
+				<select id="pageSize" v-model="pageSize" @@change="changePage(1)">
+					<option v-for="size in [10, 20, 30, 50]" :key="size" :value="size">{{ size }}</option>
+				</select>
+			</div>
+			<nav aria-label="Page navigation">
+				<ul class="pagination justify-content-center">
+					<li class="page-item" :class="{ disabled : currentPage === 1 }">
+						<button class="page-link" @@click="changePage(currentPage -1)">Pervious</button>
+					</li>
+					<li class="page-item" v-for="page in totalPages" :key="page" :class="{active : currentPage == page }">
+						<button class="page-link" @@click="changePage(page)">{{page}}</button>
+					</li>
+					<li class="page-item" :class="{disabled : currentPage == totalPages}">
+						<button class="page-link" @@click="changePage(currentPage+1)">Next</button>
+					</li>
+				</ul>
+			</nav>
+
+			<div class="col-sm-3">
+				<p>Showing {{startIndex }} to {{ endIndex  }} of {{ totalItems }} entries</p>
+			</div>
+		</div>
 	</div>
 </script>
 
@@ -27,6 +41,7 @@
 				queryParamsPager : new URLSearchParams()
 			}
 		},
+		
 		methods: {
 			
 			changePage : function(page)
@@ -36,15 +51,8 @@
 				{
 					this.currentPage = page;
 
-					let queryparams = new URLSearchParams();
-
-					queryparams.set('page', this.currentPage);
-
-					queryparams.set('pageSize', this.pageSize);
-
-					this.queryParamsPager = queryparams;
+					this.getQuery();
 					
-
 					this.$root.$refs.filterComponent.applyFilters();
 					// this.$emit('page-changed', page);
 					
@@ -53,17 +61,33 @@
 			restart() {
 				this.currentPage = 1;
 				this.queryParamsPager = new URLSearchParams();
+			},
+			getQuery() {
+					let queryparams = new URLSearchParams();
+
+					queryparams.set('page', this.currentPage);
+
+					queryparams.set('pageSize', this.pageSize);
+
+					this.queryParamsPager = queryparams;
+
 			}
 			
 		},
 		computed : {
 			totalPages() {
 				return Math.ceil(this.totalItems/this.pageSize);
+			},
+			startIndex() {
+				return (this.currentPage - 1) * this.pageSize + 1; 
+			},
+			endIndex() {
+				return Math.min(this.currentPage * this.pageSize, this.totalItems); 
 			}
-		},
-		
+		}
 		
 	})
+
 </script>	
 
 

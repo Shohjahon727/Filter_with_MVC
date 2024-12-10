@@ -41,8 +41,8 @@ namespace WebApplication4.Controllers
 			[FromQuery] decimal? maxPrice,
 			[FromQuery] int page = 1,
 			[FromQuery] int pageSize = 10,
-			[FromQuery] string? sortBy = null,    // Sortlashni qo‘shish
-			[FromQuery] string? sortOrder = null)   // Tartib (asc yoki desc)
+			[FromQuery] string? sortBy = null,    
+			[FromQuery] string? sortOrder = null) 
 		{
 			var query = _context.Cars.AsQueryable();
 			var filterColors = filterbycolor?.Split(',');
@@ -70,10 +70,8 @@ namespace WebApplication4.Controllers
 				query = query.Where(car  => car.Price <= maxPrice.Value);
 			}
 
-			// sortOrder asosida saralash tartibini belgilash
 			bool isDescending = sortOrder?.ToLower() == "desc";
 
-			// Sortlash: qaysi maydon bo‘yicha va qanday tartibda
 			query = sortBy?.ToLower() switch
 			{
 				"price" => isDescending
@@ -88,8 +86,36 @@ namespace WebApplication4.Controllers
 				"model" => isDescending
 					? query.OrderByDescending(car => car.Model)
 					: query.OrderBy(car => car.Model),
-				_ => query // Agar boshqa qiymat bo'lsa, default bo'lsin
+				_ => query 
 			};
+
+			//if (!string.IsNullOrEmpty(sortBy))
+			//{
+			//	if (sortOrder == "asc")
+			//	{
+			//		query = sortBy switch
+			//		{
+			//			"id" => query.OrderBy(c => c.Id),
+			//			"manufacturer" => query.OrderBy(c => c.Manufacturer),
+			//			"model" => query.OrderBy(c => c.Model),
+			//			"color" => query.OrderBy(c => c.Color),
+			//			"price" => query.OrderBy(c => c.Price),
+			//			_ => query
+			//		};
+			//	}
+			//	else if (sortOrder == "desc")
+			//	{
+			//		query = sortBy switch
+			//		{
+			//			"id" => query.OrderByDescending(c => c.Id),
+			//			"manufacturer" => query.OrderByDescending(c => c.Manufacturer),
+			//			"model" => query.OrderByDescending(c => c.Model),
+			//			"color" => query.OrderByDescending(c => c.Color),
+			//			"price" => query.OrderByDescending(c => c.Price),
+			//			_ => query
+			//		};
+			//	}
+			//}
 
 			var totalCount = query.Count();
 

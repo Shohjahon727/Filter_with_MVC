@@ -109,7 +109,7 @@ namespace WebApplication4.Data
 					Price = 15000
 
 				}
-				);
+			);
 		}
 
 
